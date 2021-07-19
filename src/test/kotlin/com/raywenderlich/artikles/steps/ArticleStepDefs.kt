@@ -1,18 +1,18 @@
 package com.raywenderlich.artikles.steps
 
 import com.raywenderlich.artikles.HttpUtils
+import com.raywenderlich.artikles.Resources
 import com.raywenderlich.artikles.SpringContextConfiguration
 import com.raywenderlich.artikles.StateHolder
-import io.cucumber.java.BeforeStep
+import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import io.cucumber.spring.CucumberContextConfiguration
 import io.restassured.RestAssured
-import org.hamcrest.MatcherAssert
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
-import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.*
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 
@@ -21,8 +21,9 @@ class ArticleStepDefs : SpringContextConfiguration() {
     @LocalServerPort
     val port: Int? = 0
 
-    @BeforeStep
+    @Before
     fun setup() {
+        StateHolder.clear()
         RestAssured.baseURI = "http://localhost:$port"
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
@@ -30,7 +31,7 @@ class ArticleStepDefs : SpringContextConfiguration() {
     @Given("Create an article with following fields")
     fun createAnArticleWithFollowingFields(payload: Map<String, String>) {
         HttpUtils.withPayload(payload) {
-            HttpUtils.executePost("/articles")
+            HttpUtils.executePost("/${Resources.ARTICLES}")
         }
         StateHolder.getValidatableResponse().statusCode(HttpStatus.OK.value())
         StateHolder.setDifferentiator(StateHolder.extractPathValueFromResponse<String>("id")!!)
@@ -39,7 +40,7 @@ class ArticleStepDefs : SpringContextConfiguration() {
     @Given("Update article with following fields")
     fun updateArticleWithFollowingFields(payload: Map<String, String>) {
         HttpUtils.withPayload(payload) {
-            HttpUtils.executePut("/articles/${StateHolder.getDifferentiator()}")
+            HttpUtils.executePut("/${Resources.ARTICLES}/${StateHolder.getDifferentiator()}")
         }
         StateHolder.getValidatableResponse().statusCode(HttpStatus.OK.value())
         StateHolder.setDifferentiator(StateHolder.extractPathValueFromResponse<String>("id")!!)
@@ -47,7 +48,7 @@ class ArticleStepDefs : SpringContextConfiguration() {
 
     @Then("{string} should not be null")
     fun shouldNotBeNull(path: String) {
-        StateHolder.getValidatableResponse().body(path, Matchers.notNullValue())
+        StateHolder.getValidatableResponse().body(path, notNullValue())
     }
 
     @Then("{string} should be equal to {string}")
@@ -71,21 +72,21 @@ class ArticleStepDefs : SpringContextConfiguration() {
     fun fetchArticleById() {
         val id = StateHolder.getDifferentiator()
         StateHolder.clearWithCopy(StateHolder.Type.DIFFERENTIATOR_FIELD)
-        HttpUtils.executeGet("/articles/${id}")!!
+        HttpUtils.executeGet("/${Resources.ARTICLES}/${id}")!!
     }
 
     @When("Fetch article using id of {string}")
     fun fetchArticleUsingId(id: String) {
-        HttpUtils.executeGet("/articles/${id}")!!
+        HttpUtils.executeGet("/${Resources.ARTICLES}/${id}")!!
     }
 
     @Then("Should succeed")
     fun requestShouldSucceed() {
         assertThat(
             StateHolder.getResponse()!!.statusCode,
-            Matchers.allOf(
-                Matchers.greaterThanOrEqualTo(200),
-                Matchers.lessThan(300)
+            allOf(
+                greaterThanOrEqualTo(200),
+                lessThan(300)
             )
         )
     }

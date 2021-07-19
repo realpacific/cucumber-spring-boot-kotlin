@@ -6,7 +6,6 @@ import io.restassured.http.ContentType
 import io.restassured.response.Response
 import io.restassured.response.ValidatableResponse
 import io.restassured.specification.RequestSpecification
-import java.lang.ClassCastException
 
 object StateHolder {
 
@@ -14,6 +13,10 @@ object StateHolder {
         RESPONSE,
         REQUEST,
         PAYLOAD,
+
+        /**
+         * Holds value that uniquely differentiates an entity
+         */
         DIFFERENTIATOR_FIELD,
     }
 
@@ -47,7 +50,7 @@ object StateHolder {
     }
 
     fun setPayload(payload: Any): RequestSpecification {
-        var specs = getRequest()
+        val specs = getRequest()
         state[Type.PAYLOAD] = payload
         return specs.body(payload)
     }

@@ -40,8 +40,3 @@ Feature: Create Article.
     And "title" should be equal to "Cucumber (Update)"
     And "articleType" should be equal to "PAID"
 
-
-  Scenario: As a user, when I fetch non-existing article, I should get exception.
-    Given Fetch article using id of "some-random-non-existence-id"
-    Then Should have status of 404
-    And "message" should be equal to "article not found."

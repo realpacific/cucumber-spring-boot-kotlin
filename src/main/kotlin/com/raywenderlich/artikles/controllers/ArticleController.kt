@@ -1,12 +1,13 @@
 package com.raywenderlich.artikles.controllers
 
+import com.raywenderlich.artikles.Resources
 import com.raywenderlich.artikles.services.ArticleService
 import com.raywenderlich.artikles.entities.Article
 import com.raywenderlich.artikles.payloads.UpdateArticlePayload
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/articles")
+@RequestMapping("/${Resources.ARTICLES}")
 class ArticleController(private val service: ArticleService) {
 
     @GetMapping

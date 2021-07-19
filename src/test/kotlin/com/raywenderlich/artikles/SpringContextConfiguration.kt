@@ -9,5 +9,4 @@ import io.cucumber.spring.CucumberContextConfiguration
     properties = ["spring.jpa.hibernate.ddl-auto=create-drop"]
 )
 @CucumberContextConfiguration
-class SpringContextConfiguration() {
-}
+class SpringContextConfiguration

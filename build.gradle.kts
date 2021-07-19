@@ -53,5 +53,13 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    systemProperties = mapOf("cucumber.glue" to "com.raywenderlich.artikles.steps")
+    setForkEvery(1)
+    maxParallelForks = 4
+    systemProperties = mapOf(
+        "cucumber.glue" to "com.raywenderlich.artikles.steps",
+        "junit.jupiter.execution.parallel.enabled" to "true",
+        "junit.jupiter.execution.parallel.mode.default" to "concurrent",
+        "junit.jupiter.execution.parallel.mode.classes.default" to "concurrent",
+        "junit.jupiter.execution.parallel.config.strategy" to "dynamic"
+    )
 }
