@@ -5,8 +5,7 @@ import io.cucumber.spring.CucumberContextConfiguration
 
 @SpringBootTest(
     classes = [ArtiklesApplication::class],
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = ["spring.jpa.hibernate.ddl-auto=create-drop"]
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @CucumberContextConfiguration
 class SpringContextConfiguration

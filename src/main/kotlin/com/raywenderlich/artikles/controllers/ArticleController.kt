@@ -13,24 +13,24 @@ class ArticleController(private val service: ArticleService) {
 
     @GetMapping
     fun getAllArticles(): List<ArticleResponse> {
-        return service.getAllArticles().map(ArticleResponse::from)
+        return service.getAllArticles().map(ArticleMapper::toResponse)
     }
 
     @GetMapping("/{id}")
     fun getArticleById(@PathVariable id: String): ArticleResponse {
-        return service.getArticleById(id).let(ArticleResponse::from)
+        return service.getArticleById(id).let(ArticleMapper::toResponse)
     }
 
     @PostMapping
     fun createArticle(@RequestBody payload: ArticlePayload): ArticleResponse {
-        return service.createOrUpdateArticle(ArticleMapper.from(payload)).let(ArticleResponse::from)
+        return service.createOrUpdateArticle(ArticleMapper.fromRequest(payload)).let(ArticleMapper::toResponse)
     }
 
     @PutMapping("/{id}")
     fun updateArticle(@PathVariable id: String, @RequestBody payload: ArticlePayload): ArticleResponse {
-        val article = ArticleMapper.from(payload)
+        val article = ArticleMapper.fromRequest(payload)
         article.id = id
-        return service.createOrUpdateArticle(article).let(ArticleResponse::from)
+        return service.createOrUpdateArticle(article).let(ArticleMapper::toResponse)
     }
 
     @DeleteMapping("/{id}")
