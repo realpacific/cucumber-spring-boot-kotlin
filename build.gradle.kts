@@ -42,6 +42,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    implementation("javax.validation:validation-api:2.0.1.Final")
+    implementation("org.hibernate:hibernate-validator:7.0.1.Final")
 }
 
 tasks.withType<KotlinCompile> {
@@ -54,7 +57,7 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
     useJUnitPlatform()
     setForkEvery(1)
-    maxParallelForks = 4
+    maxParallelForks = Runtime.getRuntime().availableProcessors()
     systemProperties = mapOf(
         "cucumber.glue" to "com.raywenderlich.artikles.steps",
         "junit.jupiter.execution.parallel.enabled" to "true",

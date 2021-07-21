@@ -1,4 +1,4 @@
-package com.raywenderlich.artikles.articles
+package com.raywenderlich.artikles.tests
 
 import io.cucumber.junit.Cucumber
 import io.cucumber.junit.CucumberOptions
@@ -10,6 +10,6 @@ import org.junit.runner.RunWith
     plugin = [
         "pretty", "summary", "html:reports/articles/get-articles.html",
     ],
-    features = ["classpath:features/get"],
+    features = ["classpath:features/articles/get"],
 )
 class GetArticleTest

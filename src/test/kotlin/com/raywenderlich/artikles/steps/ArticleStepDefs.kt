@@ -4,6 +4,7 @@ import com.raywenderlich.artikles.HttpUtils
 import com.raywenderlich.artikles.Resources
 import com.raywenderlich.artikles.SpringContextConfiguration
 import com.raywenderlich.artikles.StateHolder
+import com.raywenderlich.artikles.repositories.ArticleRepository
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -11,39 +12,51 @@ import io.cucumber.java.en.When
 import io.cucumber.spring.CucumberContextConfiguration
 import io.restassured.RestAssured
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.*
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.http.HttpStatus
 
 @CucumberContextConfiguration
 class ArticleStepDefs : SpringContextConfiguration() {
     @LocalServerPort
     val port: Int? = 0
 
+    @Autowired
+    private lateinit var _repository: ArticleRepository
+
     @Before
     fun setup() {
+        _repository.deleteAll()
         StateHolder.clear()
         RestAssured.baseURI = "http://localhost:$port"
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
 
     @Given("Create an article with following fields")
-    fun createAnArticleWithFollowingFields(payload: Map<String, String>) {
+    fun createAnArticleWithFollowingFields(payload: Map<String, Any>) {
         HttpUtils.withPayload(payload) {
             HttpUtils.executePost("/${Resources.ARTICLES}")
         }
-        StateHolder.getValidatableResponse().statusCode(HttpStatus.OK.value())
-        StateHolder.setDifferentiator(StateHolder.extractPathValueFromResponse<String>("id")!!)
+        if (StateHolder.getResponse().statusCode == 200) {
+            StateHolder.setDifferentiator(StateHolder.extractPathValueFromResponse<String>("id")!!)
+        }
+    }
+
+    @Given("Bulk create articles with following fields")
+    fun bulkCreateArticles(payloads: List<Map<String, Any>>) {
+        payloads.forEach {
+            createAnArticleWithFollowingFields(it)
+        }
     }
 
     @Given("Update article with following fields")
-    fun updateArticleWithFollowingFields(payload: Map<String, String>) {
+    fun updateArticleWithFollowingFields(payload: Map<String, Any>) {
         HttpUtils.withPayload(payload) {
             HttpUtils.executePut("/${Resources.ARTICLES}/${StateHolder.getDifferentiator()}")
         }
-        StateHolder.getValidatableResponse().statusCode(HttpStatus.OK.value())
-        StateHolder.setDifferentiator(StateHolder.extractPathValueFromResponse<String>("id")!!)
+        if (StateHolder.getResponse().statusCode == 200) {
+            StateHolder.setDifferentiator(StateHolder.extractPathValueFromResponse<String>("id")!!)
+        }
     }
 
     @Then("{string} should not be null")
@@ -52,8 +65,14 @@ class ArticleStepDefs : SpringContextConfiguration() {
     }
 
     @Then("{string} should be equal to {string}")
-    fun shouldBeEqual(path: String, right: Comparable<Any>) {
+    fun shouldBeEqual(path: String, right: String) {
         StateHolder.getValidatableResponse().body(path, equalTo(right))
+    }
+
+    @Then("{string} should include {string}")
+    fun shouldInclude(path: String, content: String) {
+        val list = StateHolder.getValidatableResponse().extract().body().path<List<String>>(path)
+        assertThat(list, containsInAnyOrder(content))
     }
 
     @Then("{string} should be equal to differentiator")
@@ -80,10 +99,22 @@ class ArticleStepDefs : SpringContextConfiguration() {
         HttpUtils.executeGet("/${Resources.ARTICLES}/${id}")!!
     }
 
+    @When("Fetch all articles")
+    fun fetchAllArticles() {
+        HttpUtils.executeGet(Resources.ARTICLES)
+    }
+
+    @When("Delete article")
+    fun deleteArticle() {
+        val id = StateHolder.getDifferentiator()
+        HttpUtils.executeDelete("${Resources.ARTICLES}/${id}")
+    }
+
+
     @Then("Should succeed")
     fun requestShouldSucceed() {
         assertThat(
-            StateHolder.getResponse()!!.statusCode,
+            StateHolder.getResponse().statusCode,
             allOf(
                 greaterThanOrEqualTo(200),
                 lessThan(300)
@@ -94,8 +125,16 @@ class ArticleStepDefs : SpringContextConfiguration() {
     @Then("Should have status of {int}")
     fun requestShouldSucceed(statsCode: Int) {
         assertThat(
-            StateHolder.getResponse()!!.statusCode,
+            StateHolder.getResponse().statusCode,
             equalTo(statsCode)
+        )
+    }
+
+    @Then("Should have size of {int}")
+    fun shouldHaveSizeOf(size: Int) {
+        assertThat(
+            StateHolder.getValidatableResponse().extract().body().path<List<Any>>(""),
+            hasSize(size)
         )
     }
 }

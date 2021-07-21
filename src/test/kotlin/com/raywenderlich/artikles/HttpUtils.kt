@@ -4,7 +4,7 @@ import io.restassured.response.Response
 
 object HttpUtils {
 
-    private fun execute(block: () -> Response): Response? {
+    private fun executeAndSetResponse(block: () -> Response): Response? {
         val response = block()
         StateHolder.setResponse(response)
         return StateHolder.getResponse()
@@ -16,20 +16,26 @@ object HttpUtils {
     }
 
     fun executePost(url: String): Response? {
-        return execute {
+        return executeAndSetResponse {
             StateHolder.getRequest().post(url)
         }
     }
 
     fun executePut(url: String): Response? {
-        return execute {
+        return executeAndSetResponse {
             StateHolder.getRequest().put(url)
         }
     }
 
     fun executeGet(url: String): Response? {
-        return execute {
+        return executeAndSetResponse {
             StateHolder.getRequest().get(url)
+        }
+    }
+
+    fun executeDelete(url: String): Response? {
+        return executeAndSetResponse {
+            StateHolder.getRequest().delete(url)
         }
     }
 

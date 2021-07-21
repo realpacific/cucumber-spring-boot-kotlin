@@ -76,7 +76,7 @@ object StateHolder {
     }
 
     fun getValidatableResponse(): ValidatableResponse {
-        return getResponse()!!.then()
+        return getResponse().then()
     }
 
     fun <T> extractPathValueFromResponse(path: String): T? {
@@ -88,7 +88,8 @@ object StateHolder {
 
     }
 
-    fun getResponse() = state[Type.RESPONSE] as Response?
+    fun getResponse() = getResponseOrNull()!!
+    fun getResponseOrNull() = state[Type.RESPONSE] as Response?
 
     operator fun get(key: Type): Any? {
         return state[key]
