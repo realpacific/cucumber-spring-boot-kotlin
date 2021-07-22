@@ -119,10 +119,10 @@ object StateHolder {
 
   private fun <T> extractPathValueFrom(path: String, response: ValidatableResponse): T? {
     return response.extract().body().path<T>(path)
-
   }
 
   fun getResponse() = getResponseOrNull()!!
+
   fun getResponseOrNull() = state[Type.RESPONSE] as Response?
 
   operator fun get(key: Type): Any? {
