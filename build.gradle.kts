@@ -29,15 +29,7 @@ dependencies {
 
   runtimeOnly("com.h2database:h2")
 
-  testImplementation("io.cucumber:cucumber-java:6.10.4")
-  testImplementation("io.cucumber:cucumber-junit:6.10.4")
-  testImplementation("io.cucumber:cucumber-spring:6.10.4")
-
   testImplementation("io.rest-assured:rest-assured:4.4.0")
-  // Required for Cucumber+Junit5 compatibility
-  testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.7.2")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.7.2")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 
@@ -56,13 +48,4 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
   useJUnitPlatform()
-  setForkEvery(1)
-  maxParallelForks = Runtime.getRuntime().availableProcessors()
-  systemProperties = mapOf(
-    "cucumber.glue" to "com.raywenderlich.artikles.steps",
-    "junit.jupiter.execution.parallel.enabled" to "true",
-    "junit.jupiter.execution.parallel.mode.default" to "concurrent",
-    "junit.jupiter.execution.parallel.mode.classes.default" to "concurrent",
-    "junit.jupiter.execution.parallel.config.strategy" to "dynamic"
-  )
 }
