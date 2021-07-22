@@ -32,7 +32,7 @@
  * THE SOFTWARE.
  */
 
-package com.raywenderlich.artikles
+package com.raywenderlich.artikles.exceptions
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -41,15 +41,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import javax.validation.ConstraintViolationException
 
-class NotFoundException(entityName: String) : RuntimeException("$entityName not found.")
-
 data class ErrorResponse(val errors: List<String>)
 
 @ControllerAdvice
 class ExceptionHandler : ResponseEntityExceptionHandler() {
 
-  @ExceptionHandler(NotFoundException::class)
-  fun handleNotFoundException(exception: NotFoundException): ResponseEntity<ErrorResponse> {
+  @ExceptionHandler(EntityNotFoundException::class)
+  fun handleNotFoundException(exception: EntityNotFoundException): ResponseEntity<ErrorResponse> {
     return ResponseEntity(ErrorResponse(listOfNotNull(exception.message)), HttpStatus.NOT_FOUND)
   }
 

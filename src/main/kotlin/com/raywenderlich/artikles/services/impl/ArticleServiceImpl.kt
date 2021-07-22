@@ -34,7 +34,7 @@
 
 package com.raywenderlich.artikles.services.impl
 
-import com.raywenderlich.artikles.NotFoundException
+import com.raywenderlich.artikles.exceptions.EntityNotFoundException
 import com.raywenderlich.artikles.entities.Article
 import com.raywenderlich.artikles.entities.ArticleType
 import com.raywenderlich.artikles.repositories.ArticleRepository
@@ -59,9 +59,9 @@ class ArticleServiceImpl(private val repository: ArticleRepository) : ArticleSer
     return repository.save(entity)
   }
 
-  @Throws(NotFoundException::class)
+  @Throws(EntityNotFoundException::class)
   override fun getArticleById(id: String): Article {
-    return repository.findArticleById(id) ?: throw NotFoundException(entityName = "article")
+    return repository.findArticleById(id) ?: throw EntityNotFoundException(entityName = "article")
   }
 
   override fun deleteArticleById(id: String) {
