@@ -1,4 +1,16 @@
+@isolated
 Feature: Get Article.
+
+  @requiresDBClear
+  Scenario: As a user, I should be able to get all articles.
+    Given Bulk create articles with following fields
+      | title    | body                    |
+      | Hamcrest | A testing library       |
+      | AssertJ  | Fluent testing library  |
+      | TDD      | Test Driven Development |
+    When Fetch all articles
+    Then Should succeed
+    And Should have size of 3
 
   Scenario Outline: As a user, when I fetch non-existing article, I should get exception.
     Given Fetch article using id of "<id>"
@@ -10,17 +22,6 @@ Feature: Get Article.
       | some-random-id       |
       | some-other-id        |
       | some-non-existent-id |
-
-
-  Scenario: As a user, I should be able to get all articles.
-    Given Bulk create articles with following fields
-      | title    | body                    |
-      | Hamcrest | A testing library       |
-      | AssertJ  | Fluent testing library  |
-      | TDD      | Test Driven Development |
-    When Fetch all articles
-    Then Should succeed
-    And Should have size of 3
 
   Scenario: As a user, I should be able to view a single article.
     Given Create an article with following fields

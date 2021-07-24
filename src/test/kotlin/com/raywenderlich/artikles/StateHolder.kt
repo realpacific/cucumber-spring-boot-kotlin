@@ -40,39 +40,36 @@ import io.restassured.http.ContentType
 import io.restassured.response.Response
 import io.restassured.response.ValidatableResponse
 import io.restassured.specification.RequestSpecification
+import kotlin.concurrent.getOrSet
 
 object StateHolder {
 
-  enum class Type {
-    RESPONSE,
-    REQUEST,
-    PAYLOAD,
-
-    /**
-     * Holds value that uniquely differentiates an entity
-     */
-    DIFFERENTIATOR_FIELD,
+  private class State {
+    var response: Response? = null
+    var request: RequestSpecification? = null
+    var payload: Any? = null
+    var differentiator: Any? = null
   }
 
-  private val store: ThreadLocal<MutableMap<Type, Any>> = ThreadLocal.withInitial { mutableMapOf() }
+  private val store: ThreadLocal<State> = ThreadLocal.withInitial { State() }
 
-  private val state
+  private val state: State
     get() = store.get()
 
   fun setDifferentiator(value: Any) {
-    state[Type.DIFFERENTIATOR_FIELD] = value
+    state.differentiator = value
   }
 
   fun getDifferentiator(): Any? {
-    return state[Type.DIFFERENTIATOR_FIELD]
+    return state.differentiator
   }
 
   fun setRequest(request: RequestSpecification) {
-    state[Type.REQUEST] = request
+    state.request = request
   }
 
   fun getRequest(): RequestSpecification {
-    var specs = state[Type.REQUEST] as RequestSpecification?
+    var specs = state.request
     if (specs == null) {
       specs = given()
         .contentType(ContentType.JSON)
@@ -85,12 +82,12 @@ object StateHolder {
 
   fun setPayload(payload: Any): RequestSpecification {
     val specs = getRequest()
-    state[Type.PAYLOAD] = payload
+    state.payload = payload
     return specs.body(payload)
   }
 
   fun getPayloadOrNull(): Any? {
-    return state[Type.PAYLOAD]
+    return state.payload
   }
 
   fun getPayload(): Any {
@@ -106,7 +103,7 @@ object StateHolder {
   }
 
   fun setResponse(value: Response) {
-    state[Type.RESPONSE] = value
+    state.response = value
   }
 
   fun getValidatableResponse(): ValidatableResponse {
@@ -123,38 +120,9 @@ object StateHolder {
 
   fun getResponse() = getResponseOrNull()!!
 
-  fun getResponseOrNull() = state[Type.RESPONSE] as Response?
-
-  operator fun get(key: Type): Any? {
-    return state[key]
-  }
+  fun getResponseOrNull() = state.response
 
   fun clear() {
     store.remove()
-  }
-
-  private fun set(field: Type, value: Any) {
-    state[field] = value
-  }
-
-  /**
-   * Backups [fields] and then clears [state] and restores values in [fields]
-   */
-  fun clearWithCopy(vararg fields: Type) {
-    if (fields.isEmpty()) {
-      clear()
-      return
-    }
-    val temp = mutableMapOf<Type, Any>()
-    fields.forEach {
-      val value = state[it]
-      if (value != null) {
-        temp[it] = value
-      }
-    }
-    clear()
-    temp.forEach { (key, value) ->
-      set(key, value)
-    }
   }
 }

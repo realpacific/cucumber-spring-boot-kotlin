@@ -29,22 +29,16 @@ dependencies {
 
   runtimeOnly("com.h2database:h2")
 
-  testImplementation("io.cucumber:cucumber-java:6.10.4")
-  testImplementation("io.cucumber:cucumber-junit:6.10.4")
-  testImplementation("io.cucumber:cucumber-spring:6.10.4")
-
-  testImplementation("io.rest-assured:rest-assured:4.4.0")
-  // Required for Cucumber+Junit5 compatibility
-  testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.7.2")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.7.2")
-
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
-
-  runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
-
   implementation("javax.validation:validation-api:2.0.1.Final")
   implementation("org.hibernate:hibernate-validator:7.0.1.Final")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+  testImplementation("io.cucumber:cucumber-java:6.10.4")
+
+  testImplementation("io.cucumber:cucumber-spring:6.10.4")
+  testImplementation("io.cucumber:cucumber-junit-platform-engine:6.10.4")
+  testImplementation("io.rest-assured:rest-assured:4.4.0")
+  testRuntimeOnly("org.junit.platform:junit-platform-console")
 }
 
 tasks.withType<KotlinCompile> {
@@ -54,15 +48,29 @@ tasks.withType<KotlinCompile> {
   }
 }
 
-tasks.withType<Test> {
-  useJUnitPlatform()
-  setForkEvery(1)
-  maxParallelForks = Runtime.getRuntime().availableProcessors()
-  systemProperties = mapOf(
-    "cucumber.glue" to "com.raywenderlich.artikles.steps",
-    "junit.jupiter.execution.parallel.enabled" to "true",
-    "junit.jupiter.execution.parallel.mode.default" to "concurrent",
-    "junit.jupiter.execution.parallel.mode.classes.default" to "concurrent",
-    "junit.jupiter.execution.parallel.config.strategy" to "dynamic"
-  )
+tasks {
+  val consoleLauncherTest by registering(JavaExec::class) {
+    dependsOn(testClasses)
+    doFirst {
+      println("Running parallel test")
+    }
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("org.junit.platform.console.ConsoleLauncher")
+    args("--include-engine", "cucumber")
+    args("--details", "tree")
+    args("--scan-classpath")
+
+    systemProperty("cucumber.execution.parallel.enabled", true)
+    systemProperty("cucumber.execution.parallel.config.strategy", "dynamic")
+    systemProperty(
+      "cucumber.plugin",
+      "pretty, summary, timeline:build/reports/timeline, html:build/reports/cucumber.html"
+    )
+    systemProperty("cucumber.publish.quiet", true)
+  }
+
+  test {
+    dependsOn(consoleLauncherTest)
+    exclude("**/*")
+  }
 }
