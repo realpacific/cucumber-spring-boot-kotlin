@@ -31,14 +31,15 @@ dependencies {
 
   implementation("javax.validation:validation-api:2.0.1.Final")
   implementation("org.hibernate:hibernate-validator:7.0.1.Final")
+
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 
   testImplementation("io.cucumber:cucumber-java:6.10.4")
-
   testImplementation("io.cucumber:cucumber-spring:6.10.4")
   testImplementation("io.cucumber:cucumber-junit-platform-engine:6.10.4")
-  testImplementation("io.rest-assured:rest-assured:4.4.0")
+
   testRuntimeOnly("org.junit.platform:junit-platform-console")
+  testImplementation("io.rest-assured:rest-assured:4.4.0")
 }
 
 tasks.withType<KotlinCompile> {

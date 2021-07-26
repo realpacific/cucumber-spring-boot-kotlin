@@ -48,6 +48,10 @@ object StateHolder {
     var response: Response? = null
     var request: RequestSpecification? = null
     var payload: Any? = null
+
+    /**
+     * The value that uniquely identifies an entity
+     */
     var differentiator: Any? = null
   }
 
