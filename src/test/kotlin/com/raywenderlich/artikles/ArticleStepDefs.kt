@@ -32,43 +32,51 @@
  * THE SOFTWARE.
  */
 
-package com.raywenderlich.artikles.steps
+package com.raywenderlich.artikles
 
-import com.raywenderlich.artikles.HttpUtils
-import com.raywenderlich.artikles.Resources
-import com.raywenderlich.artikles.SpringContextConfiguration
-import com.raywenderlich.artikles.StateHolder
 import com.raywenderlich.artikles.repositories.ArticleRepository
 import io.cucumber.java.Before
+import io.cucumber.java.BeforeStep
+import io.cucumber.java.Scenario
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import io.cucumber.spring.CucumberContextConfiguration
 import io.restassured.RestAssured
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 
-@CucumberContextConfiguration
 class ArticleStepDefs : SpringContextConfiguration() {
   @LocalServerPort
-  val port: Int? = 0
+  private var port: Int? = 0
 
   @Autowired
   private lateinit var _repository: ArticleRepository
 
   @Before
-  fun setup() {
-    _repository.deleteAll()
+  fun setup(scenario: Scenario) {
+    println("## Scenario: ${scenario.name} Running on: ${Thread.currentThread().name}")
+    // Required when running in non-parallel mode
     StateHolder.clear()
     RestAssured.baseURI = "http://localhost:$port"
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
   }
 
+  @BeforeStep
+  fun step(scenario: Scenario) {
+    println("## Scenario: ${scenario.name} Steps running on: ${Thread.currentThread().name}")
+  }
+
+  @Before("@requiresDBClear")
+  fun requiresDBClear(scenario: Scenario) {
+    println("Clearing table for ${scenario.name}")
+    _repository.deleteAll()
+  }
+
   @Given("Create an article with following fields")
   fun createAnArticleWithFollowingFields(payload: Map<String, Any>) {
-    HttpUtils.withPayload(payload) {
+    withPayload(payload) {
       HttpUtils.executePost("/${Resources.ARTICLES}")
     }
     if (StateHolder.getResponse().statusCode == 200) {
@@ -85,7 +93,7 @@ class ArticleStepDefs : SpringContextConfiguration() {
 
   @Given("Update article with following fields")
   fun updateArticleWithFollowingFields(payload: Map<String, Any>) {
-    HttpUtils.withPayload(payload) {
+    withPayload(payload) {
       HttpUtils.executePut("/${Resources.ARTICLES}/${StateHolder.getDifferentiator()}")
     }
     if (StateHolder.getResponse().statusCode == 200) {
@@ -125,13 +133,13 @@ class ArticleStepDefs : SpringContextConfiguration() {
   @When("Fetch article by id")
   fun fetchArticleById() {
     val id = StateHolder.getDifferentiator()
-    StateHolder.clearWithCopy(StateHolder.Type.DIFFERENTIATOR_FIELD)
-    HttpUtils.executeGet("/${Resources.ARTICLES}/${id}")!!
+    requireNotNull(id)
+    HttpUtils.executeGet("/${Resources.ARTICLES}/${id}")
   }
 
   @When("Fetch article using id of {string}")
   fun fetchArticleUsingId(id: String) {
-    HttpUtils.executeGet("/${Resources.ARTICLES}/${id}")!!
+    HttpUtils.executeGet("/${Resources.ARTICLES}/${id}")
   }
 
   @When("Fetch all articles")
@@ -158,10 +166,10 @@ class ArticleStepDefs : SpringContextConfiguration() {
   }
 
   @Then("Should have status of {int}")
-  fun requestShouldSucceed(statsCode: Int) {
+  fun requestShouldHaveStatusCodeOf(statusCode: Int) {
     assertThat(
       StateHolder.getResponse().statusCode,
-      equalTo(statsCode)
+      equalTo(statusCode)
     )
   }
 
