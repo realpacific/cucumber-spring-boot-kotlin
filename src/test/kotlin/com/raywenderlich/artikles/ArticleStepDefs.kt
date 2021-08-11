@@ -49,7 +49,7 @@ import org.springframework.boot.web.server.LocalServerPort
 
 class ArticleStepDefs : SpringContextConfiguration() {
   @LocalServerPort
-  val port: Int? = 0
+  private var port: Int? = 0
 
   @Autowired
   private lateinit var _repository: ArticleRepository
@@ -166,10 +166,10 @@ class ArticleStepDefs : SpringContextConfiguration() {
   }
 
   @Then("Should have status of {int}")
-  fun requestShouldSucceed(statsCode: Int) {
+  fun requestShouldHaveStatusCodeOf(statusCode: Int) {
     assertThat(
       StateHolder.getResponse().statusCode,
-      equalTo(statsCode)
+      equalTo(statusCode)
     )
   }
 
